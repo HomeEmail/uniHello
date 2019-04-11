@@ -1,0 +1,134 @@
+{
+	"pages": [ //pages数组中第一项表示应用启动页，参考：https://uniapp.dcloud.io/collocation/pages
+		{
+			"path": "pages/index/index",
+			"style": {
+				"navigationBarTitleText": "实验室",
+				"app-plus": {
+					"titleNView": {
+						"titleText":"实验室",
+						//"backgroundColor":"#ff0000",
+						//"titleColor":"#FFFFFF",
+						"buttons": [{
+							//"text": "\ue534",
+							//"fontSrc": "/static/uni.ttf",
+							"fontSize": "24px",
+							"color": "#333333",
+							"float":"left",
+							"type":"menu"
+						},{
+							//"text": "\ue534",
+							//"fontSrc": "/static/uni.ttf",
+							"text":"帮助",
+							"fontSize": "16px",
+							"color": "#ff0000",
+							"width":"auto",
+							"float":"right"
+						},{
+							"text": "广州市",
+							//"fontSrc": "/static/uni.ttf",
+							"fontSize": "16px",
+							"color": "#ff0000",
+							"select":true,
+							"width":"auto",
+							"float":"right"
+						}]
+					},
+					"bounce":"none"
+				}
+			}
+		}
+	    ,{
+            "path" : "pages/tab2/tab2",
+            "style" : {
+				"navigationBarTitleText": "天气预报",
+				"app-plus":{
+					"titleNView":{
+						"titleText":"",
+						"searchInput":{
+							"placeholder":"请输入宝贝",
+							"align":"left",
+							"borderRadius":"20px"
+						},
+						"buttons": [{
+							//"text": "\ue534",
+							//"fontSrc": "/static/uni.ttf",
+							"fontSize": "24px",
+							"color": "#333333",
+							"float":"left",
+							"type":"menu"
+						},{
+							"text": "搜索",
+							//"fontSrc": "/static/uni.ttf",
+							"fontSize": "16px",
+							"color": "#000000",
+							"width":"auto",
+							"float":"right"
+						}]
+					},
+					"bounce":"none"
+				}
+			}
+        }
+	    ,{
+            "path" : "pages/tab3/tab3",
+            "style" : {
+				"navigationBarTitleText": "计时音乐"
+			}
+        }
+        ,{
+            "path" : "pages/testNvue/testNvue",
+            "style" : {
+				"navigationBarTitleText": "weex测试",
+				"app-plus": {
+					"bounce":"none",//无效
+					"titleNView":{
+						"buttons":[
+							{
+								"text":"帮助",
+								"color":"#0088FB",
+								"fontSize":"18px",
+								"float":"right"
+							}
+						]
+					}
+				}
+			}
+        }
+    ],
+	"globalStyle": {
+		"navigationBarTextStyle": "black",
+		"navigationBarTitleText": "uni-app1",
+		"navigationBarBackgroundColor": "#F8F8F8",
+		"backgroundColor": "#F8F8F8",
+		"mp-alipay": {
+			"titleBarColor": "#FFFFFF"
+		}
+	},
+	"tabBar": {
+		"color": "#7A7E83",
+		"selectedColor": "#007AFF",
+		"borderStyle": "black",
+		"backgroundColor": "#F8F8F8",
+		"list": [
+			{
+				"pagePath": "pages/index/index",
+				"iconPath": "static/component.png",
+				"selectedIconPath": "static/componentHL.png",
+				"text": " 实验室"
+			},
+			{
+				"pagePath": "pages/tab2/tab2",
+				"iconPath": "static/component.png",
+				"selectedIconPath": "static/componentHL.png",
+				"text": "天气预报"
+			},
+			{
+				"pagePath": "pages/tab3/tab3",
+				"iconPath": "static/component.png",
+				"selectedIconPath": "static/componentHL.png",
+				"text": "计时音乐"
+			}
+		]
+	}
+}

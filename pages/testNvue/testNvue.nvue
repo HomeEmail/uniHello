@@ -1,0 +1,79 @@
+<template>
+	<scroller class="holder">
+		<div class="btn" @click="handleClick">
+			<text class="btn-text">click</text>
+		</div>
+		<div class="btn" @longpress="handleLongPress">
+			<text class="btn-text">longpress</text>
+		</div>
+		<div class="btn block"
+		  @appear="(e) => { handleAppear(e, 'block1'); }"
+		  @disappear="(e) => { handleDisappear(e, 'block1') }"
+		>
+			<text class="btn-text">block1</text>
+		</div>
+		<div class="btn block"
+		  @appear="(e) => { handleAppear(e, 'block2'); }"
+		  @disappear="(e) => { handleDisappear(e, 'block2') }"
+		>
+			<text class="btn-text">block2</text>
+		</div>
+    </scroller>
+</template>
+
+<script>
+	const modal = weex.requireModule('modal');
+	const toast = message => {
+		modal.toast({
+			message,
+			duration: 1,
+		});
+	};
+	export default {
+		methods: {
+			handleAppear(e, id) {
+			  toast(`
+				${e.timestamp}
+				${id} appear
+				${e.direction}
+			  `);
+			},
+			handleDisappear(e, id) {
+			  toast(`
+				${e.timestamp}
+				${id} disappear
+				${e.direction}
+			  `);
+			},
+			handleClick(e) {
+			  toast(e.timestamp + ': click');
+			},
+			handleLongPress(e) {
+			  toast(e.timestamp + ': longpress');
+			},
+		}
+	}
+</script>
+
+<style scoped>
+.holder {
+  padding-top: 20px;
+  padding-bottom: 20px;
+  padding-left: 20px;
+  padding-right: 20px;
+}
+.btn {
+  padding-top: 20px;
+  padding-bottom: 20px;
+  padding-left: 20px;
+  padding-right: 20px;
+  background-color: #0088fb;
+  margin-bottom: 20px;
+}
+.btn-text {
+  color: #fff;
+}
+.block {
+  height: 1500px;
+}
+</style>
