@@ -7,10 +7,10 @@
 			<view class="imgBox">
 				<image @tap="play" :class="playState?'zhuan':''" v-if="!!songimgurl" :src="songimgurl" ></image>
 			</view>
-			<view class="tipsTxt">点击封面图片可暂停/播放</view>
+			<view class="tipsTxt"><!-- 点击封面图片可暂停/播放 --></view>
 			<picker class="pickerBox" @change="bindPickerChange" :value="picker.index" :range="picker.array"><!-- 下面的节点不能换行，不然ios有奇怪bug -->
 				<view class="picker" v-if="picker.index>0">
-					～～<text>{{picker.array[picker.index]}}</text>后暂停音乐～～
+					～～<text>{{picker.array[picker.index]}}</text>后将暂停音乐～～
 				</view><view class="picker" v-else>
 					@点击这里<text>{{picker.array[picker.index]}}</text>时间计时@
 				</view>
@@ -22,18 +22,8 @@
 </template>
 
 <script>
-	//qq音乐api接口
-	let topByRandomUrl = 'https://c.y.qq.com/v8/fcg-bin/fcg_v8_toplist_cp.fcg?g_tk=5381&uin=0&format=json&inCharset=utf-8&outCharset=utf-8%C2%ACice=0&platform=h5&needNewCode=1&tpl=3&page=detail&type=top&topid=36&_=1520777874472';//随机推荐歌曲列表请求地址
-	let getImgUrl=function(albumid){//获取歌曲图片封面请求地址
-		return `http://imgcache.qq.com/music/photo/album_300/${albumid%100}/300_albumpic_${albumid}_0.jpg`;
-	};//"http://imgcache.qq.com/music/photo/album_300/%i/300_albumpic_%i_0.jpg";//图片封面通过albumid拼接； albumid%100, albumid
-	let getSongTokenUrl=function(songmid){//获取歌曲token请求地址
-		return `https://c.y.qq.com/base/fcgi-bin/fcg_music_express_mobile3.fcg?format=json205361747&platform=yqq&cid=205361747&songmid=${songmid}&filename=C400${songmid}.m4a&guid=126548448`;
-	};//https://c.y.qq.com/base/fcgi-bin/fcg_music_express_mobile3.fcg?format=json205361747&platform=yqq&cid=205361747&songmid=003lghpv0jfFXG&filename=C400003lghpv0jfFXG.m4a&guid=126548448
-	//songmid可以从歌曲信息中取到，filename根据songmid生成。比如，songmid是003lghpv0jfFXG，则filename就是前缀加上C400，后缀加上.m4a，即C400003lghpv0jfFXG.m4a。其他字段format、platform、cid、guid可以写死，但都是必须的。
-	let getSongPlayUrl=function(songmid,token){ //获取歌曲播放地址
-		return `http://ws.stream.qqmusic.qq.com/C400${songmid}.m4a?fromtag=0&guid=126548448&vkey=${token}`;
-	} //url的path就是上文中用到的filename。参数中的几个字段都是必须的：guid要和请求token时使用的guid保持一致，vkey即token中的vkey字段，fromtag随意指定一个整数，可以写死为0。
+	import {topByRandomUrl,getImgUrl,getSongTokenUrl,getSongPlayUrl} from '../../common/apiurl.js';
+	
 
 	let innerAudioContext = '';
 	export default {
@@ -49,11 +39,13 @@
 				songToken:'',
 				songimgurl:'',
 				songName:'',
+				albumName:'',
 				picker:{
 					index:0,
 					array:['选择','1分钟','2分钟','5分钟','8分钟','10分钟','15分钟','20分钟','30分钟','40分钟','60分钟']
 				},
-				pickerTimer:null
+				pickerTimer:null,
+				isPlayTimeout:false
 			};
 		},
 		computed:{
@@ -73,17 +65,21 @@
 		},
 		onLoad(option){
 			this.getSongListData(()=>{
-				this.readyPlay();
+				//this.readyPlay();
+				this.nextPlay();
 			});
 		},
 		onReady(){
 			
 		},
 		destroyed(){
+			
+			// #ifdef H5||MP-ALIPAY||MP-TOUTIAO
 			try{
 				innerAudioContext.destroy();
 				innerAudioContext = '';
 			}catch(err){}
+			// #endif
 			
 		},
 		methods:{
@@ -189,6 +185,8 @@
 				}
 				//拿歌曲名
 				this.songName=this.songList[this.playIndex].data.songname;
+				//拿专辑名
+				this.albumName=this.songList[this.playIndex].data.albumname;
 				//拿图片
 				this.songimgurl=getImgUrl(this.songList[this.playIndex].data.albumid);
 				console.log('songimgurl',this.songimgurl);
@@ -204,23 +202,55 @@
 			},
 			playInit(playsrc){
 				
-				if(innerAudioContext){
-					innerAudioContext.destroy();
-					innerAudioContext = '';
-					this.allmiao=0;
-					this.nowmiao=0;
-					//销毁====================
-				}
-				innerAudioContext = uni.createInnerAudioContext();
-				innerAudioContext.src = playsrc;//当前播放地址
+				
+				this.allmiao=0;
+				this.nowmiao=0;
+				
+				// #ifdef H5||MP-ALIPAY||MP-TOUTIAO
+				try{
+					if(innerAudioContext){
+						innerAudioContext.destroy(); //
+						innerAudioContext = '';
+						//销毁====================
+					}
+				}catch(err){}
+				
+				innerAudioContext = uni.createInnerAudioContext();//这个退出app就会停止播放
 				innerAudioContext.autoplay = true;
-				//获取时长
+				// #endif
+				// #ifdef APP-PLUS||MP-WEIXIN||MP-BAIDU||APP-PLUS-NVUE
+				try{
+					if(innerAudioContext){
+						innerAudioContext.stop();
+					}
+				}catch(e){
+					//TODO handle the exception
+				}
+				innerAudioContext = uni.getBackgroundAudioManager(); //注意背景音乐无销毁事件destroy
+				innerAudioContext.title=this.songName;
+				innerAudioContext.epname=this.albumName;
+				innerAudioContext.singer=this.author;
+				innerAudioContext.coverImgUrl=this.songimgurl;
+				//innerAudioContext.webUrl=playsrc;
+				innerAudioContext.onPrev(()=>{ //用户在系统音乐播放面板点击上一曲事件（iOS only）
+					this.isPlayTimeout=false;
+					this.upPlay();
+				});
+				innerAudioContext.onNext(()=>{ //用户在系统音乐播放面板点击下一曲事件（iOS only）
+					this.isPlayTimeout=false;
+					this.nextPlay();
+				});
+				// #endif
+				
+				innerAudioContext.src = playsrc;//当前播放地址
+				
+				/* //获取时长
 				let dura = setInterval(()=>{
 					this.allmiao = Math.floor(innerAudioContext.duration);
 					if(this.allmiao){
 						clearInterval(dura);
 					}
-				});
+				}); */
 				//监听事件
 				innerAudioContext.onPlay(()=>{
 					this.playFunc();
@@ -229,21 +259,52 @@
 					this.pauseFunc();
 				});
 				innerAudioContext.onTimeUpdate((e)=>{
+					this.allmiao = Math.floor(innerAudioContext.duration);
 					this.nowmiao = Math.floor(innerAudioContext.currentTime);
 				});
 				innerAudioContext.onEnded(()=>{
 					this.nextPlay();
 				});
+				innerAudioContext.onWaiting(()=>{
+					//音频加载中事件，当音频因为数据不足，需要停下来加载时会触发
+					this.waitingLoad();
+				});
+				innerAudioContext.onCanplay(()=>{
+					uni.hideLoading();
+				});
+				innerAudioContext.onError((res)=>{
+					console.log(res.errMsg);
+					console.log(res.errCode);
+					uni.hideLoading();
+					uni.showModal({
+						title:'提示',
+						content:'播放歌曲失败'+res.errCode+'||'+res.errMsg
+					});
+					
+				});
 				
 			},
 			playFunc(){
+				uni.hideLoading();
 				this.playState=1;
 			},
 			pauseFunc(){
+				uni.hideLoading();
 				this.playState= 0;
+			},
+			waitingLoad(){
+				uni.showLoading({  
+					title: '音频加载中'  
+				});
 			},
 			play(){
 				if(!!!innerAudioContext) return;
+				if(!!this.isPlayTimeout){
+					this.isPlayTimeout=false;//说明不是在时间到提示模式
+					this.nextPlay();
+					return 0;
+				}
+				
 				if(this.playState){
 					//暂停
 					innerAudioContext.pause()
@@ -253,9 +314,18 @@
 				}
 			},
 			nextPlay(){
+				if(!!this.isPlayTimeout){
+					if(this.isPlayTimeout>3){
+						return 0;
+					}
+					this.isPlayTimeout++;
+					this.playTimeout();//循环播放提示3次
+					return 0;
+				}
+				
 				if(this.audioWay==1){
 					//随机
-					this.playIndex = Math.floor(Math.random()*10)%this.songList.length;
+					this.playIndex = Math.floor(Math.random()*this.songList.length)%this.songList.length;
 				}else if(this.audioWay==0){
 					//顺序
 					if(this.playIndex >= (this.audioList.length-1)){
@@ -266,21 +336,52 @@
 				}//单曲循环
 				this.readyPlay();
 			},
+			upPlay(){
+				if(this.audioWay==1){
+					//随机
+					this.playIndex = Math.floor(Math.random()*this.songList.length)%this.songList.length;
+				}else if(this.audioWay==0){
+					//顺序
+					if(this.playIndex <= 0){
+						this.playIndex = this.audioList.length-1;
+					}else{
+						this.playIndex = this.playIndex-1;
+					}
+				}//单曲循环
+				this.readyPlay();
+			},
 			bindPickerChange(e){
 				this.picker.index=e.detail.value;
 				
 				clearTimeout(this.pickerTimer);
 				this.pickerTimer=null;
 				if(this.picker.index!=0){//选择了数值分钟
+					if(!!this.isPlayTimeout){
+						this.isPlayTimeout=false;//说明不是在时间到提示模式
+						this.nextPlay();
+					}
 					if(this.playState==0){//当前暂停了
 						this.play();
 					}
+					
 					this.pickerTimer=setTimeout(()=>{
 						this.playState=1;
 						this.play();
 						clearTimeout(this.pickerTimer);
 						this.pickerTimer=null;
 						this.picker.index=0;
+						uni.vibrateLong({
+							success: function () {
+								console.log('success');
+							}
+						});
+						uni.vibrateLong({
+							success: function () {
+								console.log('success');
+							}
+						});
+						this.isPlayTimeout=true;
+						this.playTimeout();
 						uni.showModal({
 							title:'提示',
 							content:'计时时间已到！'
@@ -288,6 +389,10 @@
 						
 					},parseInt(this.picker.array[this.picker.index],10)*60*1000);
 				}
+			},
+			playTimeout(){
+				let url= 'http://gddx.sc.chinaz.com/Files/DownLoad/sound1/201502/5506.mp3';//'../../static/timeout.mp3';
+				this.playInit(url);
 			}
 		}
 	}
@@ -359,6 +464,7 @@
 	.pickerBox{
 		position: relative;
 		z-index: 99;
+		display: inline-block;
 	}
 	.picker{
 		display: inline-block;

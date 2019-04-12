@@ -23,7 +23,9 @@
 
 <script>
 	import _city from '../../common/_city.json';
-	import commonVar from '../../common/common.js';
+	import {amapWxKey} from '../../common/common.js';
+	import {getWeatherUrl} from '../../common/apiurl.js';
+	
 	import amap from '../../common/amap-wx.js';
 	
 	export default {
@@ -77,7 +79,7 @@
 		},
 		onLoad(option) {
 			this.amapPlugin = new amap.AMapWX({  
-				key: commonVar.amapWxKey 
+				key: amapWxKey 
 			});  
 			this.getRegeo(()=>{this.loadWeather();});
 			//this.loadWeather();
@@ -130,8 +132,8 @@
 			},
 			loadWeather(){
 				let _this=this;
-				//let cityCode=_city[0].city_code;//天津 101030100
-				let url='http://t.weather.sojson.com/api/weather/city/'+_this.cityCode;
+				//天津 101030100
+				let url=getWeatherUrl(_this.cityCode);
 				_this.loading=true;
 				uni.showLoading({
 					title: '加载中'
