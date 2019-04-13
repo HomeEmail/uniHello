@@ -45,7 +45,7 @@
 					array:['选择','1分钟','2分钟','5分钟','8分钟','10分钟','15分钟','20分钟','30分钟','40分钟','60分钟']
 				},
 				pickerTimer:null,
-				isPlayTimeout:false
+				isPlayTimeout:0
 			};
 		},
 		computed:{
@@ -231,13 +231,13 @@
 				innerAudioContext.epname=this.albumName;
 				innerAudioContext.singer=this.author;
 				innerAudioContext.coverImgUrl=this.songimgurl;
-				//innerAudioContext.webUrl=playsrc;
+				innerAudioContext.webUrl=playsrc;
 				innerAudioContext.onPrev(()=>{ //用户在系统音乐播放面板点击上一曲事件（iOS only）
-					this.isPlayTimeout=false;
+					this.isPlayTimeout=0;
 					this.upPlay();
 				});
 				innerAudioContext.onNext(()=>{ //用户在系统音乐播放面板点击下一曲事件（iOS only）
-					this.isPlayTimeout=false;
+					this.isPlayTimeout=0;
 					this.nextPlay();
 				});
 				// #endif
@@ -267,7 +267,7 @@
 				});
 				innerAudioContext.onWaiting(()=>{
 					//音频加载中事件，当音频因为数据不足，需要停下来加载时会触发
-					this.waitingLoad();
+					//this.waitingLoad();
 				});
 				innerAudioContext.onCanplay(()=>{
 					uni.hideLoading();
@@ -300,7 +300,7 @@
 			play(){
 				if(!!!innerAudioContext) return;
 				if(!!this.isPlayTimeout){
-					this.isPlayTimeout=false;//说明不是在时间到提示模式
+					this.isPlayTimeout=0;//说明不是在时间到提示模式
 					this.nextPlay();
 					return 0;
 				}
@@ -315,7 +315,7 @@
 			},
 			nextPlay(){
 				if(!!this.isPlayTimeout){
-					if(this.isPlayTimeout>3){
+					if(this.isPlayTimeout>2){
 						return 0;
 					}
 					this.isPlayTimeout++;
@@ -357,7 +357,7 @@
 				this.pickerTimer=null;
 				if(this.picker.index!=0){//选择了数值分钟
 					if(!!this.isPlayTimeout){
-						this.isPlayTimeout=false;//说明不是在时间到提示模式
+						this.isPlayTimeout=0;//说明不是在时间到提示模式
 						this.nextPlay();
 					}
 					if(this.playState==0){//当前暂停了
@@ -375,12 +375,15 @@
 								console.log('success');
 							}
 						});
-						uni.vibrateLong({
-							success: function () {
-								console.log('success');
-							}
-						});
-						this.isPlayTimeout=true;
+						/* setTimeout(()=>{ //第二次震动没效果
+							uni.vibrateLong({
+								success: function () {
+									console.log('success');
+								}
+							});
+						},400); */
+						
+						this.isPlayTimeout=1;
 						this.playTimeout();
 						uni.showModal({
 							title:'提示',
@@ -391,7 +394,7 @@
 				}
 			},
 			playTimeout(){
-				let url= 'http://gddx.sc.chinaz.com/Files/DownLoad/sound1/201502/5506.mp3';//'../../static/timeout.mp3';
+				let url= 'http://gddx.sc.chinaz.com/Files/DownLoad/sound1/201502/5506.mp3?t='+(new Date().getTime());//'../../static/timeout.mp3?t=';
 				this.playInit(url);
 			}
 		}
