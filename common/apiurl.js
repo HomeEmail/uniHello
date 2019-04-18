@@ -1,9 +1,9 @@
 
 
 //天气接口
-const weatherBaseUrl='http://t.weather.sojson.com';
+const weatherBaseUrl="https://ufotool.com";//'http://t.weather.sojson.com';
 export let getWeatherUrl= (cityCode)=>{//天津 101030100
-	return weatherBaseUrl+'/api/weather/city/'+cityCode;
+	return weatherBaseUrl+'/api/weather/city/'+cityCode;//ng配置转发 真实请求地址：http://t.weather.sojson.com/api/weather/city/101280601
 };
 
 //qq音乐api接口

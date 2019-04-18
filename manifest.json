@@ -1,7 +1,7 @@
 {
     "name" : "uniHello",
     "appid" : "__UNI__DD2059B",
-    "description" : "",
+    "description" : "uniHelloDemo",
     "versionName" : "1.0.0",
     "versionCode" : "100",
     "transformPx" : false,

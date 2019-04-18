@@ -116,7 +116,7 @@
 						console.log('fail',info);
 						uni.hideLoading(); 
 						uni.showModal({
-							title:'提示',
+							title:'提示1',
 							content:info.errMsg
 						});
 					}
@@ -170,6 +170,10 @@
 					},
 					fail() {
 						
+						uni.showModal({
+							title:'提示2',
+							content:'error:'+url
+						});
 					},
 					complete() {
 						req=null;
@@ -190,6 +194,7 @@
 	.h1{
 		font-size: 36upx;
 		padding: 20upx 0upx;
+		color: red;
 	}
 	.p1{
 		font: 28upx;
