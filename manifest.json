@@ -60,7 +60,7 @@
             },
             "icons" : {
                 "ios" : {
-                    "appstore" : "/Users/ivan/10010/app_logo1.png",
+                    "appstore" : "E:/10010/app_logo1.png",
                     "ipad" : {
                         "app" : "unpackage/res/icons/76x76.png",
                         "app@2x" : "unpackage/res/icons/152x152.png",
