@@ -35,9 +35,11 @@
 				playState:0,//当前播放状态 1播放 0暂停
 				audioWay:1, //当前播放模式 1随机 0顺序
 				playIndex:0,//当前播放列表的下标
+				oldPlayIndex:0,//上一首播放列表的下标
 				songmid:'',
 				songToken:'',
 				songimgurl:'',
+				songPlayUrl:'',
 				songName:'',
 				albumName:'',
 				picker:{
@@ -161,10 +163,11 @@
 						!!fn&&fn();
 					},
 					fail() {
-						uni.showModal({
+						_this.readyPlay();//_this.playInit(this.songPlayUrl);//请求失败了继续播放刚刚那首
+						/* uni.showModal({
 							title:'提示',
 							content:'请求歌曲token失败'
-						});
+						}); */
 					},
 					complete() {
 						req=null;
@@ -194,8 +197,8 @@
 				this.songmid=this.songList[this.playIndex].data.songmid||'';
 				this.getSongToken(()=>{
 					//拿播放地址
-					let playsrc=getSongPlayUrl(this.songmid,this.songToken);
-					this.playInit(playsrc);
+					this.songPlayUrl=getSongPlayUrl(this.songmid,this.songToken);
+					this.playInit(this.songPlayUrl);
 				});
 				
 				
@@ -322,7 +325,7 @@
 					this.playTimeout();//循环播放提示3次
 					return 0;
 				}
-				
+				this.oldPlayIndex=this.playIndex;
 				if(this.audioWay==1){
 					//随机
 					this.playIndex = Math.floor(Math.random()*this.songList.length)%this.songList.length;
@@ -337,6 +340,7 @@
 				this.readyPlay();
 			},
 			upPlay(){
+				this.oldPlayIndex=this.playIndex;
 				if(this.audioWay==1){
 					//随机
 					this.playIndex = Math.floor(Math.random()*this.songList.length)%this.songList.length;
